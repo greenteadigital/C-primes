@@ -75,7 +75,6 @@ void initThreads(unsigned short bitlen) {
 	for (int i = 0; i != sizeof(threads); i++) {
 		pthread_join(*threads[i], NULL);
 	}
-	
 }
 
 int main(int argc, char *argv[]) {
