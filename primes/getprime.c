@@ -34,6 +34,6 @@ int main(int argc, char *argv[]) {
 	ushort prime_decimal_strlen = (int) ceil(2048 * log(2));
 	char outstr[prime_decimal_strlen];
 	recvfrom(sockfd, (void *) &outstr, prime_decimal_strlen, 0, (struct sockaddr *) &r_addr, &remotesz);
-	printf("Got prime decimal number: %s\n", &outstr[0]);
+	printf("Client: %s\n", &outstr[0]);
 	
 }

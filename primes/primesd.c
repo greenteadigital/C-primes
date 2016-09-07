@@ -18,7 +18,7 @@ int sockfd; // local socket
 
 pthread_mutex_t sendto_lock;
 pthread_mutex_t urandom_lock;
-volatile bool served_prime = false;
+volatile bool served_prime = false;	// protected by sendto_lock
 
 void getUrandom(unsigned char *buff, unsigned char buffsz) {
 	
@@ -61,24 +61,23 @@ void getPrime(void *p_params) {
 		if (mpz_probab_prime_p(randnum, 17)) break;
 	}
 	
-	ushort prime_decimal_strlen = (int) ceil(PRIME_SZ * log(2));
+	ushort prime_decimal_strlen = (int) ceil(PRIME_SZ / log2(10));
 	char outstr[prime_decimal_strlen + 1];
-	
 	int send_size = gmp_snprintf((void *) &outstr, prime_decimal_strlen, "%Zd", randnum);
 	
 	socklen_t remotesz = sizeof(*(params.r_addr));
-	printf("\nPreparing to send prime to port %d\n", ntohs(params.r_addr->sin_port));
+	//printf("\nPreparing to send prime to port %d\n", ntohs(params.r_addr->sin_port));
 	pthread_mutex_lock(&sendto_lock);
 	
 	if (!served_prime) {
 		sendto(sockfd, (void *) &outstr, send_size, 0, (struct sockaddr *) params.r_addr, remotesz);
-		printf("%s", &outstr[0]);
+		printf("Daemon: %s", &outstr[0]);
 		served_prime = true;
+		pthread_mutex_unlock(&sendto_lock);
 	} else {
+		pthread_mutex_unlock(&sendto_lock);
 		pthread_exit(0);
 	}
-	
-	pthread_mutex_unlock(&sendto_lock);
 	
 }
 
@@ -125,7 +124,7 @@ int main(int argc, char *argv[]) {
 									  (struct sockaddr *) &r_addr,
 									  &remotesz );
 		}
-		printf("Daemon: rcvd request for a %s-bit prime from port %d\n", &buff[0], ntohs(r_addr.sin_port));
+		printf("\nDaemon: rcvd request for a %s-bit prime from port %d\n", &buff[0], ntohs(r_addr.sin_port));
 		served_prime = false;
 		
 		struct prime_params params;
