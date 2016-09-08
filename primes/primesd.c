@@ -13,12 +13,15 @@
 
 #include "primes.h"
 
+bool dbg = false;
+
 FILE *urandom;
 int sockfd; // local socket
 
 pthread_mutex_t sendto_lock;
 pthread_mutex_t urandom_lock;
-volatile bool served_prime = false;	// protected by sendto_lock
+pthread_mutex_t served_lock;
+volatile bool served_prime = false;
 
 void getUrandom(unsigned char *buff, unsigned char buffsz) {
 	
@@ -56,6 +59,12 @@ void getPrime(void *p_params) {
 	gmp_randseed(state, seed);
 	
 	while(1) {
+		pthread_mutex_lock(&served_lock);
+		if (served_prime) {
+			pthread_mutex_unlock(&served_lock);
+			pthread_exit(0);
+		}
+		pthread_mutex_unlock(&served_lock);
 		mpz_urandomb(randnum, state, PRIME_SZ);
 		mpz_ior(randnum, randnum, one);	// make sure randnum is odd by bitwise-ORing with 1
 		if (mpz_probab_prime_p(randnum, 17)) break;
@@ -63,18 +72,22 @@ void getPrime(void *p_params) {
 	
 	ushort prime_decimal_strlen = (int) ceil(PRIME_SZ / log2(10));
 	char outstr[prime_decimal_strlen + 1];
-	int send_size = gmp_snprintf((void *) &outstr, prime_decimal_strlen, "%Zd", randnum);
+	memset((void *) &outstr[0], 0, sizeof(outstr));
+	int send_size = gmp_sprintf((void *) &outstr[0], "%Zd", randnum);
 	
-	socklen_t remotesz = sizeof(*(params.r_addr));
-	//printf("\nPreparing to send prime to port %d\n", ntohs(params.r_addr->sin_port));
+	socklen_t remotesz = sizeof(params.r_addr);
+	if (dbg) printf("\nPreparing to send prime to port %d\n", ntohs(params.r_addr.sin_port));
 	pthread_mutex_lock(&sendto_lock);
+	pthread_mutex_lock(&served_lock);
 	
 	if (!served_prime) {
-		sendto(sockfd, (void *) &outstr, send_size, 0, (struct sockaddr *) params.r_addr, remotesz);
-		printf("Daemon: %s", &outstr[0]);
+		if (dbg) printf("\n\nDaemon: %s", &outstr[0]);
+		sendto(sockfd, (void *) &outstr, send_size, 0, (struct sockaddr *) &params.r_addr, remotesz);
 		served_prime = true;
+		pthread_mutex_unlock(&served_lock);
 		pthread_mutex_unlock(&sendto_lock);
 	} else {
+		pthread_mutex_unlock(&served_lock);
 		pthread_mutex_unlock(&sendto_lock);
 		pthread_exit(0);
 	}
@@ -95,6 +108,7 @@ int main(int argc, char *argv[]) {
 	
 	pthread_mutex_init(&sendto_lock, NULL);
 	pthread_mutex_init(&urandom_lock, NULL);
+	pthread_mutex_init(&served_lock, NULL);
 	
 	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	
@@ -124,12 +138,14 @@ int main(int argc, char *argv[]) {
 									  (struct sockaddr *) &r_addr,
 									  &remotesz );
 		}
-		printf("\nDaemon: rcvd request for a %s-bit prime from port %d\n", &buff[0], ntohs(r_addr.sin_port));
-		served_prime = false;
 		
 		struct prime_params params;
 		params.bitsize = strtol(&buff[0], 0, 0);
-		params.r_addr = &r_addr;
+		params.r_addr = r_addr;
+		
+		pthread_mutex_lock(&served_lock);
+		served_prime = false;
+		pthread_mutex_unlock(&served_lock);
 		
 		initThreads(&params);
 	}

@@ -4,6 +4,9 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <math.h>
+#include <stdlib.h>
+
+#define BITLEN "4096"
 
 #include "primes.h"
 
@@ -23,7 +26,7 @@ int main(int argc, char *argv[]) {
 	r_addr.sin_port = htons(PRIMES_DAEMON_PORT);
 	inet_pton(AF_INET, LOCALHOST, &(r_addr.sin_addr.s_addr));
 	
-	char buff[4] = "2048";
+	char buff[4] = BITLEN;
 	sendto(sockfd, (void *) &buff, sizeof(buff), 0, (struct sockaddr *) &r_addr, sizeof(r_addr));
 	
 	socklen_t len = sizeof(l_addr);
@@ -31,8 +34,9 @@ int main(int argc, char *argv[]) {
 	
 	//printf("Client: sent request for a %s-bit prime over port %d\n", &buff[0], ntohs(l_addr.sin_port));
 	
-	ushort prime_decimal_strlen = (int) ceil(2048 * log(2));
+	ushort prime_decimal_strlen = (int) ceil(atoi(BITLEN) * log(2));
 	char outstr[prime_decimal_strlen];
+	memset(&outstr[0], 0, sizeof(outstr));
 	recvfrom(sockfd, (void *) &outstr, prime_decimal_strlen, 0, (struct sockaddr *) &r_addr, &remotesz);
 	printf("Client: %s\n", &outstr[0]);
 	

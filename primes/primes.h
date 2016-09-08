@@ -8,15 +8,15 @@
 
 #ifndef primes_h
 
-	#define primes_h
+#define primes_h
 
-	#define PRIMES_DAEMON_PORT 31397
-	#define LOCALHOST "127.0.0.1"
-	#define NTHREADS 4
+#define PRIMES_DAEMON_PORT 31397
+#define LOCALHOST "127.0.0.1"
+#define NTHREADS 4
 
 struct prime_params {
+	struct sockaddr_in r_addr;
 	short bitsize;
-	struct sockaddr_in *r_addr;
 };
 
 #endif /* primes_h */
