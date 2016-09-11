@@ -21,7 +21,6 @@ int sockfd; // local socket
 pthread_mutex_t sendto_lock;
 pthread_mutex_t urandom_lock;
 pthread_mutex_t served_lock;
-volatile bool served_prime = false;
 
 void getUrandom(unsigned char *buff, unsigned char buffsz) {
 	
@@ -34,12 +33,10 @@ void getUrandom(unsigned char *buff, unsigned char buffsz) {
 	pthread_mutex_unlock(&urandom_lock);
 }
 
-void getPrime(void *p_params) {
+void getPrime(void *thread_params) {
 	
-	const char SEED_SZ_BYTES = 16;	// 128 bit random seed
-	
-	struct prime_params params = *((struct prime_params *) p_params);
-	short PRIME_SZ = params.bitsize;
+	struct thread_params *params = (struct thread_params *) thread_params;
+	short PRIME_SZ = params->bitsize;
 	unsigned char seed_buff[SEED_SZ_BYTES];
 	
 	gmp_randstate_t state;
@@ -60,7 +57,7 @@ void getPrime(void *p_params) {
 	
 	while(1) {
 		pthread_mutex_lock(&served_lock);
-		if (served_prime) {
+		if (params->served_prime) {
 			pthread_mutex_unlock(&served_lock);
 			pthread_exit(0);
 		}
@@ -75,15 +72,15 @@ void getPrime(void *p_params) {
 	memset((void *) &outstr[0], 0, sizeof(outstr));
 	int send_size = gmp_sprintf((void *) &outstr[0], "%Zd", randnum);
 	
-	socklen_t remotesz = sizeof(params.r_addr);
-	if (dbg) printf("\nPreparing to send prime to port %d\n", ntohs(params.r_addr.sin_port));
+	socklen_t remotesz = sizeof(params->r_addr);
+	if (dbg) printf("\nPreparing to send prime to port %d\n", ntohs(params->r_addr.sin_port));
 	pthread_mutex_lock(&sendto_lock);
 	pthread_mutex_lock(&served_lock);
 	
-	if (!served_prime) {
+	if (!params->served_prime) {
 		if (dbg) printf("\n\nDaemon: %s", &outstr[0]);
-		sendto(sockfd, (void *) &outstr, send_size, 0, (struct sockaddr *) &params.r_addr, remotesz);
-		served_prime = true;
+		sendto(sockfd, (void *) &outstr, send_size, 0, (struct sockaddr *) &(params->r_addr), remotesz);
+		params->served_prime = true;
 		pthread_mutex_unlock(&served_lock);
 		pthread_mutex_unlock(&sendto_lock);
 	} else {
@@ -94,7 +91,7 @@ void getPrime(void *p_params) {
 	
 }
 
-void initThreads(struct prime_params *params) {
+void initThreads(struct thread_params *params) {
 	
 	for (int i = 0; i != NTHREADS; i++) {
 		pthread_t new_thread;
@@ -132,20 +129,17 @@ int main(int argc, char *argv[]) {
 		char recv_count = 0;
 		while(recv_count < buffsz) {
 			 recv_count += recvfrom ( sockfd,
-									  (void *) (&buff + recv_count),
+									  (void *) (&buff + (recv_count * sizeof(char))),
 									  sizeof(buff) - recv_count,
 									  0,
 									  (struct sockaddr *) &r_addr,
 									  &remotesz );
 		}
 		
-		struct prime_params params;
+		struct thread_params params;
 		params.bitsize = strtol(&buff[0], 0, 0);
-		params.r_addr = r_addr;
-		
-		pthread_mutex_lock(&served_lock);
-		served_prime = false;
-		pthread_mutex_unlock(&served_lock);
+		params.r_addr= r_addr;
+		params.served_prime = false;
 		
 		initThreads(&params);
 	}
