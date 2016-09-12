@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define BITLEN "4096"
+#define BITLEN "3072"
 
 #include "primes.h"
 
@@ -38,6 +38,6 @@ int main(int argc, char *argv[]) {
 	char outstr[prime_decimal_strlen];
 	memset(&outstr[0], 0, sizeof(outstr));
 	recvfrom(sockfd, (void *) &outstr, prime_decimal_strlen, 0, (struct sockaddr *) &r_addr, &remotesz);
-	printf("Client: %s\n", &outstr[0]);
+	printf("%s\n", &outstr[0]);
 	
 }

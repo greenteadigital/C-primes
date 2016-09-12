@@ -67,8 +67,7 @@ void getPrime(void *thread_params) {
 		if (mpz_probab_prime_p(randnum, 17)) break;
 	}
 	
-	ushort prime_decimal_strlen = (int) ceil(PRIME_SZ / log2(10));
-	char outstr[prime_decimal_strlen + 1];
+	char outstr[((int) ceil(PRIME_SZ / log2(10))) + 1];	// # of digits in n-bit decimal expressed as string
 	memset((void *) &outstr[0], 0, sizeof(outstr));
 	int send_size = gmp_sprintf((void *) &outstr[0], "%Zd", randnum);
 	
@@ -97,6 +96,12 @@ void initThreads(struct thread_params *params) {
 		pthread_t new_thread;
 		pthread_create(&new_thread, NULL, (void *) &getPrime, (void *) params);
 	}
+}
+
+void usage(struct sockaddr_in *r_addr, socklen_t remotesz) {
+	
+	char msg[] = "Supported bit lengths are \"1024\", \"2048\", \"3072\", and \"4096\"";
+	sendto(sockfd, (void *) &msg, sizeof(msg), 0, (struct sockaddr *) r_addr, remotesz);
 }
 
 int main(int argc, char *argv[]) {
@@ -136,7 +141,17 @@ int main(int argc, char *argv[]) {
 									  &remotesz );
 		}
 		
+		if ( ! ( strncmp(&buff[0], "1024", 4) == 0
+			|| strncmp(&buff[0], "2048", 4) == 0
+			|| strncmp(&buff[0], "3072", 4) == 0
+			|| strncmp(&buff[0], "4096", 4) == 0)) {
+			
+			usage(&r_addr, remotesz);
+			continue;
+		}
+		
 		struct thread_params params;
+		
 		params.bitsize = strtol(&buff[0], 0, 0);
 		params.r_addr= r_addr;
 		params.served_prime = false;
