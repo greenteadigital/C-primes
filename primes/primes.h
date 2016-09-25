@@ -17,8 +17,9 @@
 
 struct thread_params {
 	struct sockaddr_in r_addr;
-	short bitsize;
 	volatile bool served_prime;
+	short bitsize;
+	volatile char live_thread_count;
 };
 
 #endif /* primes_h */

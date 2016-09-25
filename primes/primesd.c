@@ -13,12 +13,11 @@
 
 #include "primes.h"
 
-bool dbg = false;
+bool DBG = false;
 
 FILE *urandom;
 int sockfd; // local socket
 
-pthread_mutex_t sendto_lock;
 pthread_mutex_t urandom_lock;
 pthread_mutex_t served_lock;
 
@@ -36,7 +35,6 @@ void getUrandom(unsigned char *buff, unsigned char buffsz) {
 void getPrime(void *thread_params) {
 	
 	struct thread_params *params = (struct thread_params *) thread_params;
-	short PRIME_SZ = params->bitsize;
 	unsigned char seed_buff[SEED_SZ_BYTES];
 	
 	gmp_randstate_t state;
@@ -62,39 +60,44 @@ void getPrime(void *thread_params) {
 			pthread_exit(0);
 		}
 		pthread_mutex_unlock(&served_lock);
-		mpz_urandomb(randnum, state, PRIME_SZ);
+		mpz_urandomb(randnum, state, params->bitsize);
 		mpz_ior(randnum, randnum, one);	// make sure randnum is odd by bitwise-ORing with 1
 		if (mpz_probab_prime_p(randnum, 17)) break;
 	}
 	
-	char outstr[((int) ceil(PRIME_SZ / log2(10))) + 1];	// # of digits in n-bit decimal expressed as string
+	char outstr[((int) ceil(params->bitsize / log2(16))) + 1];	// # of digits in n-bit decimal string
 	memset((void *) &outstr[0], 0, sizeof(outstr));
-	int send_size = gmp_sprintf((void *) &outstr[0], "%Zd", randnum);
+	int send_size = gmp_sprintf((void *) &outstr[0], "%Zx", randnum);
 	
 	socklen_t remotesz = sizeof(params->r_addr);
-	if (dbg) printf("\nPreparing to send prime to port %d\n", ntohs(params->r_addr.sin_port));
-	pthread_mutex_lock(&sendto_lock);
 	pthread_mutex_lock(&served_lock);
 	
 	if (!params->served_prime) {
-		if (dbg) printf("\n\nDaemon: %s", &outstr[0]);
 		sendto(sockfd, (void *) &outstr, send_size, 0, (struct sockaddr *) &(params->r_addr), remotesz);
 		params->served_prime = true;
+		if (DBG){
+			printf("\nthread params struct @ %p\n", params);
+			printf("\nDaemon: sent prime over port %d: %s\n", ntohs(params->r_addr.sin_port), &outstr[0]);
+		}
+		printf("\nlive thread count: %d\n", params->live_thread_count);
+		if (params->live_thread_count == 1) {
+//			printf("freeing thread params struct");
+			free(thread_params);
+		}
 		pthread_mutex_unlock(&served_lock);
-		pthread_mutex_unlock(&sendto_lock);
 	} else {
+		params->live_thread_count -= 1;
 		pthread_mutex_unlock(&served_lock);
-		pthread_mutex_unlock(&sendto_lock);
 		pthread_exit(0);
 	}
 	
 }
 
-void initThreads(struct thread_params *params) {
+void initThreads(void *params) {
 	
 	for (int i = 0; i != NTHREADS; i++) {
 		pthread_t new_thread;
-		pthread_create(&new_thread, NULL, (void *) &getPrime, (void *) params);
+		pthread_create(&new_thread, NULL, (void *) &getPrime, params);
 	}
 }
 
@@ -108,7 +111,6 @@ int main(int argc, char *argv[]) {
 	
 	urandom = fopen("/dev/urandom", "r");
 	
-	pthread_mutex_init(&sendto_lock, NULL);
 	pthread_mutex_init(&urandom_lock, NULL);
 	pthread_mutex_init(&served_lock, NULL);
 	
@@ -122,6 +124,7 @@ int main(int argc, char *argv[]) {
 	inet_pton(AF_INET, LOCALHOST, &(l_addr.sin_addr.s_addr));
 	
 	bind(sockfd, (struct sockaddr*) &l_addr, sizeof(l_addr));
+	
 	char buffsz = 4;
 	char buff[buffsz];
 	
@@ -151,12 +154,17 @@ int main(int argc, char *argv[]) {
 		}
 		
 		struct thread_params params;
-		
 		params.bitsize = strtol(&buff[0], 0, 0);
 		params.r_addr= r_addr;
 		params.served_prime = false;
+		params.live_thread_count = 4;
 		
-		initThreads(&params);
+		void * pp = malloc(sizeof(params));
+		memcpy(pp, &params, sizeof(params));
+		
+		if (DBG) printf("\nPreparing to send %s-bit prime to port %d\n", &buff[0], ntohs(params.r_addr.sin_port));
+		
+		initThreads(pp);
 	}
 	
 }
