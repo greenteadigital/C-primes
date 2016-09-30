@@ -32,6 +32,17 @@ void getUrandom(unsigned char *buff, unsigned char buffsz) {
 	pthread_mutex_unlock(&urandom_lock);
 }
 
+void cleanup(gmp_randstate_t *state,
+			 mpz_t *seed,
+			 mpz_t *randnum,
+			 mpz_t *one) {
+	
+	mpz_clear(*seed);
+	mpz_clear(*randnum);
+	mpz_clear(*one);
+	gmp_randclear(*state);
+}
+
 void getPrime(void *thread_params) {
 	
 	struct thread_params *params = (struct thread_params *) thread_params;
@@ -56,6 +67,8 @@ void getPrime(void *thread_params) {
 	while(1) {
 		pthread_mutex_lock(&served_lock);
 		if (params->served_prime) {
+			cleanup(&state, &seed, &randnum, &one);
+			params->live_thread_count -= 1;
 			pthread_mutex_unlock(&served_lock);
 			pthread_exit(0);
 		}
@@ -79,13 +92,20 @@ void getPrime(void *thread_params) {
 			printf("\nthread params struct @ %p\n", params);
 			printf("\nDaemon: sent prime over port %d: %s\n", ntohs(params->r_addr.sin_port), &outstr[0]);
 		}
-		printf("\nlive thread count: %d\n", params->live_thread_count);
-		if (params->live_thread_count == 1) {
-//			printf("freeing thread params struct");
-			free(thread_params);
-		}
+		cleanup(&state, &seed, &randnum, &one);
+		params->live_thread_count -= 1;
 		pthread_mutex_unlock(&served_lock);
+		pthread_exit(0);
 	} else {
+		printf("\nlive_thread_count: %d\n", params->live_thread_count);
+		if (params->live_thread_count == 1) {
+			printf("\nfreeing thread params struct: %lu bytes\n", sizeof(*params));
+			free(params);
+			cleanup(&state, &seed, &randnum, &one);
+			pthread_mutex_unlock(&served_lock);
+			pthread_exit(0);
+		}
+		cleanup(&state, &seed, &randnum, &one);
 		params->live_thread_count -= 1;
 		pthread_mutex_unlock(&served_lock);
 		pthread_exit(0);
@@ -98,6 +118,7 @@ void initThreads(void *params) {
 	for (int i = 0; i != NTHREADS; i++) {
 		pthread_t new_thread;
 		pthread_create(&new_thread, NULL, (void *) &getPrime, params);
+		pthread_detach(new_thread);
 	}
 }
 
@@ -132,16 +153,19 @@ int main(int argc, char *argv[]) {
 	socklen_t remotesz = sizeof(r_addr);
 	memset((void *) &r_addr, 0, sizeof(r_addr));
 	
+	struct thread_params params;
+	char recv_count;
+	
 	while(1) {
 		
-		char recv_count = 0;
+		recv_count = 0;
 		while(recv_count < buffsz) {
-			 recv_count += recvfrom ( sockfd,
-									  (void *) (&buff + (recv_count * sizeof(char))),
-									  sizeof(buff) - recv_count,
-									  0,
-									  (struct sockaddr *) &r_addr,
-									  &remotesz );
+			recv_count += recvfrom ( sockfd,
+									(void *) (&buff + (recv_count * sizeof(char))),
+									sizeof(buff) - recv_count,
+									0,
+									(struct sockaddr *) &r_addr,
+									&remotesz );
 		}
 		
 		if ( ! ( strncmp(&buff[0], "1024", 4) == 0
@@ -153,11 +177,10 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 		
-		struct thread_params params;
 		params.bitsize = strtol(&buff[0], 0, 0);
-		params.r_addr= r_addr;
+		params.r_addr = r_addr;
 		params.served_prime = false;
-		params.live_thread_count = 4;
+		params.live_thread_count = (char) NTHREADS;
 		
 		void * pp = malloc(sizeof(params));
 		memcpy(pp, &params, sizeof(params));
