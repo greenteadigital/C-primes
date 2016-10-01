@@ -32,15 +32,25 @@ void getUrandom(unsigned char *buff, unsigned char buffsz) {
 	pthread_mutex_unlock(&urandom_lock);
 }
 
-void cleanup(gmp_randstate_t *state,
-			 mpz_t *seed,
-			 mpz_t *randnum,
-			 mpz_t *one) {
+void thread_exit(struct thread_params *params,
+				 gmp_randstate_t *state,
+				 mpz_t *seed,
+				 mpz_t *randnum,
+				 mpz_t *one,
+				 bool last_thread) {
 	
+	if (last_thread) {
+		free(params);
+	} else {
+		params->live_thread_count -= 1;
+	}
 	mpz_clear(*seed);
 	mpz_clear(*randnum);
 	mpz_clear(*one);
 	gmp_randclear(*state);
+	pthread_mutex_unlock(&served_lock);
+	pthread_exit(0);
+	
 }
 
 void getPrime(void *thread_params) {
@@ -66,13 +76,17 @@ void getPrime(void *thread_params) {
 	
 	while(1) {
 		pthread_mutex_lock(&served_lock);
+		
 		if (params->served_prime) {
-			cleanup(&state, &seed, &randnum, &one);
-			params->live_thread_count -= 1;
-			pthread_mutex_unlock(&served_lock);
-			pthread_exit(0);
+			
+			if (params->live_thread_count == 1) {
+				thread_exit(params, &state, &seed, &randnum, &one, true);
+			} else {
+				thread_exit(params, &state, &seed, &randnum, &one, false);
+			}
 		}
 		pthread_mutex_unlock(&served_lock);
+		
 		mpz_urandomb(randnum, state, params->bitsize);
 		mpz_ior(randnum, randnum, one);	// make sure randnum is odd by bitwise-ORing with 1
 		if (mpz_probab_prime_p(randnum, 17)) break;
@@ -88,27 +102,17 @@ void getPrime(void *thread_params) {
 	if (!params->served_prime) {
 		sendto(sockfd, (void *) &outstr, send_size, 0, (struct sockaddr *) &(params->r_addr), remotesz);
 		params->served_prime = true;
-		if (DBG){
-			printf("\nthread params struct @ %p\n", params);
+		if (DBG) {
 			printf("\nDaemon: sent prime over port %d: %s\n", ntohs(params->r_addr.sin_port), &outstr[0]);
 		}
-		cleanup(&state, &seed, &randnum, &one);
-		params->live_thread_count -= 1;
-		pthread_mutex_unlock(&served_lock);
-		pthread_exit(0);
+		thread_exit(params, &state, &seed, &randnum, &one, false);
 	} else {
-		printf("\nlive_thread_count: %d\n", params->live_thread_count);
+		
 		if (params->live_thread_count == 1) {
-			printf("\nfreeing thread params struct: %lu bytes\n", sizeof(*params));
-			free(params);
-			cleanup(&state, &seed, &randnum, &one);
-			pthread_mutex_unlock(&served_lock);
-			pthread_exit(0);
+			thread_exit(params, &state, &seed, &randnum, &one, true);
+		} else {
+			thread_exit(params, &state, &seed, &randnum, &one, false);
 		}
-		cleanup(&state, &seed, &randnum, &one);
-		params->live_thread_count -= 1;
-		pthread_mutex_unlock(&served_lock);
-		pthread_exit(0);
 	}
 	
 }
@@ -159,13 +163,14 @@ int main(int argc, char *argv[]) {
 	while(1) {
 		
 		recv_count = 0;
-		while(recv_count < buffsz) {
-			recv_count += recvfrom ( sockfd,
-									(void *) (&buff + (recv_count * sizeof(char))),
-									sizeof(buff) - recv_count,
-									0,
-									(struct sockaddr *) &r_addr,
-									&remotesz );
+		while (recv_count < buffsz) {
+			recv_count += recvfrom (
+					sockfd,
+					(void *) (&buff + (recv_count * sizeof(char))),
+					sizeof(buff) - recv_count,
+					0,
+					(struct sockaddr *) &r_addr,
+					&remotesz );
 		}
 		
 		if ( ! ( strncmp(&buff[0], "1024", 4) == 0
