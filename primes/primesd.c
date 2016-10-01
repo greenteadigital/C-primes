@@ -23,9 +23,9 @@ pthread_mutex_t served_lock;
 
 void getUrandom(unsigned char *buff, unsigned char buffsz) {
 	
-	int numread = 0;
 	pthread_mutex_lock(&urandom_lock);
 	
+	int numread = 0;
 	while (numread < buffsz) {
 		numread += fread((void *) buff, 1, buffsz - numread, urandom);
 	}
@@ -36,10 +36,9 @@ void thread_exit(struct thread_params *params,
 				 gmp_randstate_t *state,
 				 mpz_t *seed,
 				 mpz_t *randnum,
-				 mpz_t *one,
-				 bool last_thread) {
+				 mpz_t *one) {
 	
-	if (last_thread) {
+	if (params->live_thread_count == 1) {
 		free(params);
 	} else {
 		params->live_thread_count -= 1;
@@ -50,7 +49,6 @@ void thread_exit(struct thread_params *params,
 	gmp_randclear(*state);
 	pthread_mutex_unlock(&served_lock);
 	pthread_exit(0);
-	
 }
 
 void getPrime(void *thread_params) {
@@ -75,16 +73,9 @@ void getPrime(void *thread_params) {
 	gmp_randseed(state, seed);
 	
 	while(1) {
-		pthread_mutex_lock(&served_lock);
 		
-		if (params->served_prime) {
-			
-			if (params->live_thread_count == 1) {
-				thread_exit(params, &state, &seed, &randnum, &one, true);
-			} else {
-				thread_exit(params, &state, &seed, &randnum, &one, false);
-			}
-		}
+		pthread_mutex_lock(&served_lock);
+		if (params->served_prime) thread_exit(params, &state, &seed, &randnum, &one);
 		pthread_mutex_unlock(&served_lock);
 		
 		mpz_urandomb(randnum, state, params->bitsize);
@@ -95,8 +86,8 @@ void getPrime(void *thread_params) {
 	char outstr[((int) ceil(params->bitsize / log2(16))) + 1];	// # of digits in n-bit decimal string
 	memset((void *) &outstr[0], 0, sizeof(outstr));
 	int send_size = gmp_sprintf((void *) &outstr[0], "%Zx", randnum);
-	
 	socklen_t remotesz = sizeof(params->r_addr);
+	
 	pthread_mutex_lock(&served_lock);
 	
 	if (!params->served_prime) {
@@ -105,14 +96,10 @@ void getPrime(void *thread_params) {
 		if (DBG) {
 			printf("\nDaemon: sent prime over port %d: %s\n", ntohs(params->r_addr.sin_port), &outstr[0]);
 		}
-		thread_exit(params, &state, &seed, &randnum, &one, false);
+		thread_exit(params, &state, &seed, &randnum, &one);
+	
 	} else {
-		
-		if (params->live_thread_count == 1) {
-			thread_exit(params, &state, &seed, &randnum, &one, true);
-		} else {
-			thread_exit(params, &state, &seed, &randnum, &one, false);
-		}
+		thread_exit(params, &state, &seed, &randnum, &one);
 	}
 	
 }
@@ -124,12 +111,6 @@ void initThreads(void *params) {
 		pthread_create(&new_thread, NULL, (void *) &getPrime, params);
 		pthread_detach(new_thread);
 	}
-}
-
-void usage(struct sockaddr_in *r_addr, socklen_t remotesz) {
-	
-	char msg[] = "Supported bit lengths are \"1024\", \"2048\", \"3072\", and \"4096\"";
-	sendto(sockfd, (void *) &msg, sizeof(msg), 0, (struct sockaddr *) r_addr, remotesz);
 }
 
 int main(int argc, char *argv[]) {
@@ -178,7 +159,6 @@ int main(int argc, char *argv[]) {
 			|| strncmp(&buff[0], "3072", 4) == 0
 			|| strncmp(&buff[0], "4096", 4) == 0)) {
 			
-			usage(&r_addr, remotesz);
 			continue;
 		}
 		
