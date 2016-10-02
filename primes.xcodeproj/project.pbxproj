@@ -7,28 +7,52 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B528C3961D7C8CCD0045EECB /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = B528C3951D7C8CCD0045EECB /* main.c */; };
+		B5596C0F1DA0CEC000B06B1E /* getprime in CopyFiles */ = {isa = PBXBuildFile; fileRef = B5E59CF01DA0CBDD00F859CF /* getprime */; };
+		B5A24EC01DA0C5E3005D9979 /* primesd.c in Sources */ = {isa = PBXBuildFile; fileRef = B5A24EB31DA0C547005D9979 /* primesd.c */; };
+		B5E59CEB1DA0CB5B00F859CF /* primesd in CopyFiles */ = {isa = PBXBuildFile; fileRef = B5E59CEA1DA0CB4400F859CF /* primesd */; };
+		B5E59CF71DA0CC0100F859CF /* getprime.c in Sources */ = {isa = PBXBuildFile; fileRef = B5A24EB01DA0C522005D9979 /* getprime.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		B528C3901D7C8CCD0045EECB /* CopyFiles */ = {
+		B5A24EB71DA0C5D7005D9979 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
+			buildActionMask = 12;
+			dstPath = /Users/ben/Desktop;
 			dstSubfolderSpec = 0;
 			files = (
+				B5E59CEB1DA0CB5B00F859CF /* primesd in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5E59CEE1DA0CBDD00F859CF /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = /Users/ben/Desktop;
+			dstSubfolderSpec = 0;
+			files = (
+				B5596C0F1DA0CEC000B06B1E /* getprime in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B528C3921D7C8CCD0045EECB /* primes */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = primes; sourceTree = BUILT_PRODUCTS_DIR; };
-		B528C3951D7C8CCD0045EECB /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		B5A24EB01DA0C522005D9979 /* getprime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = getprime.c; sourceTree = "<group>"; };
+		B5A24EB21DA0C53C005D9979 /* primes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = primes.h; sourceTree = "<group>"; };
+		B5A24EB31DA0C547005D9979 /* primesd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = primesd.c; sourceTree = "<group>"; };
+		B5E59CEA1DA0CB4400F859CF /* primesd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = primesd; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5E59CF01DA0CBDD00F859CF /* getprime */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = getprime; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		B528C38F1D7C8CCD0045EECB /* Frameworks */ = {
+		B5A24EB61DA0C5D7005D9979 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5E59CED1DA0CBDD00F859CF /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -42,22 +66,17 @@
 			isa = PBXGroup;
 			children = (
 				B528C3941D7C8CCD0045EECB /* primes */,
-				B528C3931D7C8CCD0045EECB /* Products */,
+				B5E59CEA1DA0CB4400F859CF /* primesd */,
+				B5E59CF01DA0CBDD00F859CF /* getprime */,
 			);
-			sourceTree = "<group>";
-		};
-		B528C3931D7C8CCD0045EECB /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				B528C3921D7C8CCD0045EECB /* primes */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		B528C3941D7C8CCD0045EECB /* primes */ = {
 			isa = PBXGroup;
 			children = (
-				B528C3951D7C8CCD0045EECB /* main.c */,
+				B5A24EB31DA0C547005D9979 /* primesd.c */,
+				B5A24EB21DA0C53C005D9979 /* primes.h */,
+				B5A24EB01DA0C522005D9979 /* getprime.c */,
 			);
 			path = primes;
 			sourceTree = "<group>";
@@ -65,21 +84,38 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B528C3911D7C8CCD0045EECB /* primes */ = {
+		B5A24EB81DA0C5D7005D9979 /* primesd */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B528C3991D7C8CCD0045EECB /* Build configuration list for PBXNativeTarget "primes" */;
+			buildConfigurationList = B5A24EBD1DA0C5D7005D9979 /* Build configuration list for PBXNativeTarget "primesd" */;
 			buildPhases = (
-				B528C38E1D7C8CCD0045EECB /* Sources */,
-				B528C38F1D7C8CCD0045EECB /* Frameworks */,
-				B528C3901D7C8CCD0045EECB /* CopyFiles */,
+				B5A24EB51DA0C5D7005D9979 /* Sources */,
+				B5A24EB61DA0C5D7005D9979 /* Frameworks */,
+				B5A24EB71DA0C5D7005D9979 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = primes;
-			productName = primes;
-			productReference = B528C3921D7C8CCD0045EECB /* primes */;
+			name = primesd;
+			productName = primesd;
+			productReference = B5E59CEA1DA0CB4400F859CF /* primesd */;
+			productType = "com.apple.product-type.tool";
+		};
+		B5E59CEF1DA0CBDD00F859CF /* getprime */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5E59CF41DA0CBDD00F859CF /* Build configuration list for PBXNativeTarget "getprime" */;
+			buildPhases = (
+				B5E59CEC1DA0CBDD00F859CF /* Sources */,
+				B5E59CED1DA0CBDD00F859CF /* Frameworks */,
+				B5E59CEE1DA0CBDD00F859CF /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = getprime;
+			productName = getprime;
+			productReference = B5E59CF01DA0CBDD00F859CF /* getprime */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -88,11 +124,18 @@
 		B528C38A1D7C8CCD0045EECB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Green Tea Digital";
 				TargetAttributes = {
-					B528C3911D7C8CCD0045EECB = {
-						CreatedOnToolsVersion = 7.3.1;
+					B5A24EB81DA0C5D7005D9979 = {
+						CreatedOnToolsVersion = 8.0;
+						DevelopmentTeam = Y25LDEPBWB;
+						ProvisioningStyle = Automatic;
+					};
+					B5E59CEF1DA0CBDD00F859CF = {
+						CreatedOnToolsVersion = 8.0;
+						DevelopmentTeam = Y25LDEPBWB;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -104,21 +147,30 @@
 				en,
 			);
 			mainGroup = B528C3891D7C8CCD0045EECB;
-			productRefGroup = B528C3931D7C8CCD0045EECB /* Products */;
+			productRefGroup = B528C3891D7C8CCD0045EECB;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B528C3911D7C8CCD0045EECB /* primes */,
+				B5A24EB81DA0C5D7005D9979 /* primesd */,
+				B5E59CEF1DA0CBDD00F859CF /* getprime */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		B528C38E1D7C8CCD0045EECB /* Sources */ = {
+		B5A24EB51DA0C5D7005D9979 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B528C3961D7C8CCD0045EECB /* main.c in Sources */,
+				B5A24EC01DA0C5E3005D9979 /* primesd.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5E59CEC1DA0CBDD00F859CF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B5E59CF71DA0CC0100F859CF /* getprime.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,8 +191,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -162,9 +216,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-lgmp";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -183,8 +240,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -200,22 +259,53 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = "-lgmp";
 				SDKROOT = macosx;
 			};
 			name = Release;
 		};
-		B528C39A1D7C8CCD0045EECB /* Debug */ = {
+		B5A24EBE1DA0C5D7005D9979 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				DEVELOPMENT_TEAM = Y25LDEPBWB;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
-		B528C39B1D7C8CCD0045EECB /* Release */ = {
+		B5A24EBF1DA0C5D7005D9979 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				DEVELOPMENT_TEAM = Y25LDEPBWB;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		B5E59CF51DA0CBDD00F859CF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				DEVELOPMENT_TEAM = Y25LDEPBWB;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		B5E59CF61DA0CBDD00F859CF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				DEVELOPMENT_TEAM = Y25LDEPBWB;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -232,13 +322,23 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B528C3991D7C8CCD0045EECB /* Build configuration list for PBXNativeTarget "primes" */ = {
+		B5A24EBD1DA0C5D7005D9979 /* Build configuration list for PBXNativeTarget "primesd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B528C39A1D7C8CCD0045EECB /* Debug */,
-				B528C39B1D7C8CCD0045EECB /* Release */,
+				B5A24EBE1DA0C5D7005D9979 /* Debug */,
+				B5A24EBF1DA0C5D7005D9979 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B5E59CF41DA0CBDD00F859CF /* Build configuration list for PBXNativeTarget "getprime" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B5E59CF51DA0CBDD00F859CF /* Debug */,
+				B5E59CF61DA0CBDD00F859CF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

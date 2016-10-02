@@ -3,16 +3,20 @@
 <plist version="1.0">
 <dict>
 	<key>SchemeUserState</key>
-	<dict>
-		<key>primes.xcscheme</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>0</integer>
-		</dict>
-	</dict>
+	<dict/>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>B528C3911D7C8CCD0045EECB</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B5A24EB81DA0C5D7005D9979</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B5E59CEF1DA0CBDD00F859CF</key>
 		<dict>
 			<key>primary</key>
 			<true/>
