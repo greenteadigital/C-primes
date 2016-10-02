@@ -97,7 +97,6 @@ void getPrime(void *thread_params) {
 			printf("\nDaemon: sent prime over port %d: %s\n", ntohs(params->r_addr.sin_port), &outstr[0]);
 		}
 		thread_exit(params, &state, &seed, &randnum, &one);
-	
 	} else {
 		thread_exit(params, &state, &seed, &randnum, &one);
 	}
@@ -132,7 +131,7 @@ int main(int argc, char *argv[]) {
 	bind(sockfd, (struct sockaddr*) &l_addr, sizeof(l_addr));
 	
 	char buffsz = 4;
-	char buff[buffsz];
+	char client_req_bitlen[buffsz];
 	
 	struct sockaddr_in r_addr;	// remote client sock info
 	socklen_t remotesz = sizeof(r_addr);
@@ -147,22 +146,22 @@ int main(int argc, char *argv[]) {
 		while (recv_count < buffsz) {
 			recv_count += recvfrom (
 					sockfd,
-					(void *) (&buff + (recv_count * sizeof(char))),
-					sizeof(buff) - recv_count,
+					(void *) (&client_req_bitlen + (recv_count * sizeof(char))),
+					sizeof(client_req_bitlen) - recv_count,
 					0,
 					(struct sockaddr *) &r_addr,
 					&remotesz );
 		}
 		
-		if ( ! ( strncmp(&buff[0], "1024", 4) == 0
-			|| strncmp(&buff[0], "2048", 4) == 0
-			|| strncmp(&buff[0], "3072", 4) == 0
-			|| strncmp(&buff[0], "4096", 4) == 0)) {
+		if ( ! ( strncmp(&client_req_bitlen[0], "1024", 4) == 0
+			|| strncmp(&client_req_bitlen[0], "2048", 4) == 0
+			|| strncmp(&client_req_bitlen[0], "3072", 4) == 0
+			|| strncmp(&client_req_bitlen[0], "4096", 4) == 0)) {
 			
 			continue;
 		}
 		
-		params.bitsize = strtol(&buff[0], 0, 0);
+		params.bitsize = strtol(&client_req_bitlen[0], 0, 0);
 		params.r_addr = r_addr;
 		params.served_prime = false;
 		params.live_thread_count = (char) NTHREADS;
@@ -170,7 +169,7 @@ int main(int argc, char *argv[]) {
 		void * pp = malloc(sizeof(params));
 		memcpy(pp, &params, sizeof(params));
 		
-		if (DBG) printf("\nPreparing to send %s-bit prime to port %d\n", &buff[0], ntohs(params.r_addr.sin_port));
+		if (DBG) printf("\nPreparing to send %s-bit prime to port %d\n", &client_req_bitlen[0], ntohs(params.r_addr.sin_port));
 		
 		initThreads(pp);
 	}
