@@ -83,7 +83,7 @@ void getPrime(void *thread_params) {
 		if (mpz_probab_prime_p(randnum, 17)) break;
 	}
 	
-	char outstr[((int) ceil(params->bitsize / log2(16))) + 1];	// # of digits in n-bit decimal string
+	char outstr[((int) ceil(params->bitsize / log2(16))) + 1];	// # of digits in n-bit hexadecimal string
 	memset((void *) &outstr[0], 0, sizeof(outstr));
 	int send_size = gmp_sprintf((void *) &outstr[0], "%Zx", randnum);
 	socklen_t remotesz = sizeof(params->r_addr);
