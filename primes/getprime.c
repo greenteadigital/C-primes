@@ -49,7 +49,6 @@ int main(int argc, char *argv[]) {
 	r_addr.sin_port = htons(PRIMES_DAEMON_PORT);
 	inet_pton(AF_INET, LOCALHOST, &(r_addr.sin_addr.s_addr));
 	
-	
 	sendto(sockfd, (void *) &bitlen, sizeof(bitlen), 0, (struct sockaddr *) &r_addr, sizeof(r_addr));
 	
 	socklen_t len = sizeof(l_addr);
@@ -57,10 +56,10 @@ int main(int argc, char *argv[]) {
 	
 	if (DBG) printf("\nClient: sent request for a %s-bit prime over port %d\n", &bitlen[0], ntohs(l_addr.sin_port));
 	
-	ushort prime_decimal_strlen = (int) ceil(atoi(bitlen) * log(2));
-	char outstr[prime_decimal_strlen];
+	ushort prime_hex_strlen = (int) ceil(atoi(bitlen) / 4);
+	char outstr[prime_hex_strlen];
 	memset(&outstr[0], 0, sizeof(outstr));
-	recvfrom(sockfd, (void *) &outstr, prime_decimal_strlen, 0, (struct sockaddr *) &r_addr, &remotesz);
+	recvfrom(sockfd, (void *) &outstr, prime_hex_strlen, 0, (struct sockaddr *) &r_addr, &remotesz);
 	
 	if (DBG) printf("\nClient: %s\n", &outstr[0]);
 	

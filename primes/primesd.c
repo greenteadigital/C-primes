@@ -83,7 +83,7 @@ void getPrime(void *thread_params) {
 		if (mpz_probab_prime_p(randnum, 17)) break;
 	}
 	
-	char outstr[((int) ceil(params->bitsize / log2(16))) + 1];	// # of digits in n-bit hexadecimal string
+	char outstr[((int) ceil(params->bitsize / 4)) + 1];	// # of digits in n-bit hexadecimal string
 	memset((void *) &outstr[0], 0, sizeof(outstr));
 	int send_size = gmp_sprintf((void *) &outstr[0], "%Zx", randnum);
 	socklen_t remotesz = sizeof(params->r_addr);
@@ -169,7 +169,8 @@ int main(int argc, char *argv[]) {
 		void * pp = malloc(sizeof(params));
 		memcpy(pp, &params, sizeof(params));
 		
-		if (DBG) printf("\nPreparing to send %s-bit prime to port %d\n", &client_req_bitlen[0], ntohs(params.r_addr.sin_port));
+		if (DBG) printf("\nPreparing to send %s-bit prime to port %d\n", &client_req_bitlen[0],
+						ntohs(((struct thread_params *) pp)->r_addr.sin_port));
 		
 		initThreads(pp);
 	}
