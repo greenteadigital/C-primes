@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 	
 	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	
-	struct sockaddr_in l_addr;	// daemon socket address 
+	struct sockaddr_in l_addr;	// daemon socket address
 	memset((void *) &l_addr, 0, sizeof(l_addr));
 	
 	l_addr.sin_family = AF_INET;
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
 	char buffsz = 4;
 	char client_req_bitlen[buffsz];
 	
-	struct sockaddr_in r_addr;	// remote client sock info
+	struct sockaddr_in r_addr;	// remote client address
 	socklen_t remotesz = sizeof(r_addr);
 	memset((void *) &r_addr, 0, sizeof(r_addr));
 	
