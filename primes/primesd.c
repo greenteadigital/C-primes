@@ -20,6 +20,7 @@ int sockfd; // local socket
 
 pthread_mutex_t urandom_lock;
 pthread_mutex_t served_lock;
+pthread_mutex_t tcnt_lock;
 
 void getUrandom(unsigned char *buff, unsigned char buffsz) {
 	
@@ -38,10 +39,14 @@ void thread_exit(struct thread_params *params,
 				 mpz_t *randnum,
 				 mpz_t *one) {
 	
+	pthread_mutex_lock(&tcnt_lock);
+	
 	if (params->live_thread_count == 1) {
+		pthread_mutex_unlock(&tcnt_lock);
 		free(params);
 	} else {
 		params->live_thread_count -= 1;
+		pthread_mutex_unlock(&tcnt_lock);
 	}
 	mpz_clear(*seed);
 	mpz_clear(*randnum);
@@ -108,6 +113,9 @@ void initThreads(void *params) {
 	for (int i = 0; i != NTHREADS; i++) {
 		pthread_t new_thread;
 		pthread_create(&new_thread, NULL, (void *) &getPrime, params);
+		pthread_mutex_lock(&tcnt_lock);
+		((struct thread_params *) params)->live_thread_count++;
+		pthread_mutex_unlock(&tcnt_lock);
 		pthread_detach(new_thread);
 	}
 }
@@ -118,10 +126,11 @@ int main(int argc, char *argv[]) {
 	
 	pthread_mutex_init(&urandom_lock, NULL);
 	pthread_mutex_init(&served_lock, NULL);
+	pthread_mutex_init(&tcnt_lock, NULL);
 	
 	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	
-	struct sockaddr_in l_addr;	// local daemon sock info
+	struct sockaddr_in l_addr;	// daemon socket address 
 	memset((void *) &l_addr, 0, sizeof(l_addr));
 	
 	l_addr.sin_family = AF_INET;
@@ -164,7 +173,7 @@ int main(int argc, char *argv[]) {
 		params.bitsize = strtol(&client_req_bitlen[0], 0, 0);
 		params.r_addr = r_addr;
 		params.served_prime = false;
-		params.live_thread_count = (char) NTHREADS;
+		params.live_thread_count = 0;
 		
 		void * pp = malloc(sizeof(params));
 		memcpy(pp, &params, sizeof(params));
