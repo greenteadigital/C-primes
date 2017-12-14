@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#define DBG true
+#define DBG false
 
 #include "primes.h"
 
